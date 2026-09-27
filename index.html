@@ -1,73 +1,305 @@
-<!doctype html>
-<html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Filou Macro System</title>
-<style>
-body{font-family:system-ui;max-width:900px;margin:auto;padding:20px;background:#111;color:#eee}
-.card{background:#1c1c1c;border:1px solid #333;border-radius:14px;padding:16px;margin:12px 0}
-button,input,select,textarea{padding:9px;border-radius:9px;border:1px solid #444;background:#222;color:#eee}
-button{cursor:pointer}.row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
-.action{border-top:1px solid #333;padding:10px 0}.muted{color:#aaa}
-</style>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Filou Macro System</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
 <body>
-<h1>Filou Macro System</h1>
-<div class=card>
-<b>Appareil :</b> <span id=id>...</span> · <b>Code :</b> <span id=code>...</span>
-</div>
-<div class=card>
-<h2>Créer une macro</h2>
-<input id=name placeholder="Nom de la macro">
-<div id=actions></div>
-<div class=row>
-<select id=type onchange=addAction()>
-<option value="">+ Ajouter une action…</option>
-<option value=launch>Lancer une application/commande</option>
-<option value=open_file>Ouvrir un fichier</option>
-<option value=open_url>Ouvrir une URL</option>
-<option value=command>Exécuter une commande (sensible)</option>
-<option value=text>Préparer du texte</option>
-<option value=wait>Attendre</option>
-</select>
-</div>
-<button onclick=saveMacro()>💾 Enregistrer localement</button>
-</div>
-<div class=card>
-<button onclick=sync()>↻ Synchroniser GitHub</button>
-<span id=status class=muted></span>
-<h2>Macros disponibles</h2><div id=list>...</div>
-</div>
-<script>
-const A="http://127.0.0.1:8765";
-let token=localStorage.getItem("filou_token")||prompt("Token de l'appareil (voir le terminal de l'agent) :");
-if(token)localStorage.setItem("filou_token",token);
-const $=x=>document.getElementById(x);
-function addAction(){
- let t=$("type").value;if(!t)return;$("type").value="";
- let d=document.createElement("div");d.className="action";d.dataset.type=t;
- if(t==="wait")d.innerHTML=`⏱️ Attendre <input data-v type=number value=500> ms`;
- else if(t==="open_file")d.innerHTML=`📂 Fichier <input data-v placeholder="~/Documents/fichier.txt">`;
- else if(t==="open_url")d.innerHTML=`🌐 URL <input data-v placeholder="https://...">`;
- else if(t==="launch")d.innerHTML=`🚀 Commande de lancement <input data-v placeholder="firefox">`;
- else if(t==="command")d.innerHTML=`⚠️ Commande sensible <input data-v placeholder="rm ..."><label><input data-ok type=checkbox> Je confirme cette commande</label>`;
- else d.innerHTML=`📋 Texte <textarea data-v placeholder="Texte à préparer"></textarea>`;
- $("actions").appendChild(d);
-}
-function buildActions(){
- return [...$("actions").children].map(x=>({type:x.dataset.type, ...(x.dataset.type==="wait"?{ms:+x.querySelector("[data-v]").value}:{x.dataset.type==="command"?{command:x.querySelector("[data-v]").value,approved:x.querySelector("[data-ok]").checked}:{x.dataset.type==="text"?{text:x.querySelector("[data-v]").value}:{x.dataset.type==="open_file"?{path:x.querySelector("[data-v]").value}:{x.dataset.type==="open_url"?{url:x.querySelector("[data-v]").value}:{command:x.querySelector("[data-v]").value}}})}));
-}
-function saveMacro(){
- let n=$("name").value.trim();if(!n)return alert("Donne un nom à la macro.");
- let m={id:"m-"+Date.now(),name:n,actions:buildActions()};
- let all=JSON.parse(localStorage.getItem("filou_drafts")||"[]");all.push(m);localStorage.setItem("filou_drafts",JSON.stringify(all));
- $("status").textContent="Macro enregistrée dans ce navigateur."; $("name").value=""; $("actions").innerHTML="";
-}
-async function api(p,o={}){o.headers=Object.assign({"X-Filou-Token":token},o.headers||{});return (await fetch(A+p,o)).json()}
-async function load(){
- try{let i=await (await fetch(A+"/api/info")).json();$("id").textContent=i.id;$("code").textContent=i.pair_code;
- let ms=await (await fetch(A+"/api/macros")).json();$("list").innerHTML=ms.map(m=>`<div class=action><b>${m.name}</b> <button onclick="run('${m.id}')">▶ Exécuter</button></div>`).join("")||"<span class=muted>Aucune macro synchronisée.</span>";
- }catch(e){$("status").textContent="Agent Linux non lancé."}
-}
-async function run(id){let r=await api("/api/run/"+encodeURIComponent(id),{method:"POST"});$("status").textContent=r.ok?"Macro lancée.":r.error}
-async function sync(){let r=await api("/api/sync",{method:"POST"});$("status").textContent=r.message;load()}
-load();
-</script>
-</body></html>
+
+<header class="topbar">
+
+    <div>
+        <h1>Filou Macro System</h1>
+        <p>Macro System • Réseau local</p>
+    </div>
+
+    <div class="connection">
+        <span id="statusDot" class="status-dot offline"></span>
+        <span id="statusText">Déconnecté</span>
+    </div>
+
+</header>
+
+
+<main>
+
+    <!-- =========================
+         CONNEXION APPAREIL
+    ========================== -->
+
+    <section class="panel">
+
+        <div class="panel-header">
+            <h2>🔗 Connexion à l'appareil</h2>
+        </div>
+
+        <p class="description">
+            Entre le nom et le code de ton PC pour établir la connexion.
+        </p>
+
+        <label for="deviceName">
+            Nom de l'appareil
+        </label>
+
+        <input
+            id="deviceName"
+            type="text"
+            placeholder="Ex : Mon PC Linux"
+            autocomplete="off"
+        >
+
+
+        <label for="deviceCode">
+            Code de l'appareil
+        </label>
+
+        <input
+            id="deviceCode"
+            type="password"
+            placeholder="Ex : FILOU-AB12-CD34"
+            autocomplete="off"
+        >
+
+
+        <label for="deviceAddress">
+            Adresse locale
+        </label>
+
+        <input
+            id="deviceAddress"
+            type="text"
+            placeholder="Ex : 192.168.1.42:8765"
+            autocomplete="off"
+        >
+
+
+        <div class="buttons">
+
+            <button
+                id="connectButton"
+                class="button primary"
+            >
+                🔗 Connecter
+            </button>
+
+            <button
+                id="saveConnection"
+                class="button secondary"
+            >
+                💾 Enregistrer
+            </button>
+
+        </div>
+
+
+        <div
+            id="connectionMessage"
+            class="message"
+        ></div>
+
+    </section>
+
+
+
+    <!-- =========================
+         CREATION MACRO
+    ========================== -->
+
+    <section class="panel">
+
+        <div class="panel-header">
+
+            <h2>🧩 Créer une macro</h2>
+
+            <button
+                id="resetMacro"
+                class="button secondary"
+            >
+                Réinitialiser
+            </button>
+
+        </div>
+
+
+        <label for="macroName">
+            Nom
+        </label>
+
+        <input
+            id="macroName"
+            type="text"
+            placeholder="Ex : Préparer Minecraft"
+        >
+
+
+        <label for="macroDescription">
+            Description
+        </label>
+
+        <input
+            id="macroDescription"
+            type="text"
+            placeholder="Description de la macro"
+        >
+
+
+        <h3>Actions</h3>
+
+        <div
+            id="actionList"
+            class="action-list"
+        ></div>
+
+
+        <div class="add-action">
+
+            <select id="actionType">
+
+                <option value="">
+                    + Ajouter une action
+                </option>
+
+                <option value="open_app">
+                    🚀 Ouvrir une application
+                </option>
+
+                <option value="open_file">
+                    📂 Ouvrir un fichier
+                </option>
+
+                <option value="open_url">
+                    🌐 Ouvrir une URL
+                </option>
+
+                <option value="command">
+                    💻 Exécuter une commande
+                </option>
+
+                <option value="text">
+                    ⌨️ Écrire du texte
+                </option>
+
+                <option value="key">
+                    🎹 Appuyer sur une touche
+                </option>
+
+                <option value="wait">
+                    ⏱️ Attendre
+                </option>
+
+                <option value="mouse">
+                    🖱️ Souris
+                </option>
+
+            </select>
+
+
+            <button
+                id="addAction"
+                class="button primary"
+            >
+                Ajouter
+            </button>
+
+        </div>
+
+
+        <button
+            id="saveMacro"
+            class="button save-button"
+        >
+            💾 Enregistrer la macro
+        </button>
+
+    </section>
+
+
+
+    <!-- =========================
+         MACROS
+    ========================== -->
+
+    <section class="panel">
+
+        <div class="panel-header">
+
+            <h2>📚 Mes macros</h2>
+
+            <div class="buttons">
+
+                <button
+                    id="refreshMacros"
+                    class="button secondary"
+                >
+                    🔄 Actualiser
+                </button>
+
+                <button
+                    id="exportJson"
+                    class="button secondary"
+                >
+                    ⬇️ Exporter JSON
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="macroList"
+            class="macro-list"
+        ></div>
+
+    </section>
+
+
+
+    <!-- =========================
+         INFORMATIONS
+    ========================== -->
+
+    <section class="panel">
+
+        <h2>ℹ️ Informations</h2>
+
+        <div class="info-box">
+
+            <span>Appareil connecté</span>
+
+            <strong id="displayDevice">
+                Aucun
+            </strong>
+
+        </div>
+
+        <div class="info-box">
+
+            <span>Adresse locale</span>
+
+            <strong id="displayAddress">
+                Aucune
+            </strong>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<div
+    id="toast"
+    class="toast"
+></div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>

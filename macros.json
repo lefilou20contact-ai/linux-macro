@@ -1,22 +1,50 @@
 [
-  {
-    "id": "open-calculator",
-    "name": "Ouvrir la calculatrice",
-    "actions": [
-      {
-        "type": "launch",
-        "command": "gnome-calculator"
-      }
-    ]
-  },
-  {
-    "id": "open-browser",
-    "name": "Ouvrir le navigateur",
-    "actions": [
-      {
-        "type": "open_url",
-        "url": "https://www.google.com"
-      }
-    ]
-  }
+    {
+        "id": "open-browser",
+        "name": "Ouvrir le navigateur",
+        "description": "Ouvre Firefox.",
+        "actions": [
+            {
+                "type": "open_app",
+                "value": "firefox"
+            }
+        ]
+    },
+    {
+        "id": "open-google",
+        "name": "Ouvrir Google",
+        "description": "Ouvre Google dans le navigateur.",
+        "actions": [
+            {
+                "type": "open_url",
+                "value": "https://www.google.com"
+            }
+        ]
+    },
+    {
+        "id": "minecraft-f3",
+        "name": "Minecraft - F3",
+        "description": "Appuie sur F3.",
+        "actions": [
+            {
+                "type": "key",
+                "value": "F3"
+            }
+        ]
+    },
+    {
+        "id": "minecraft-example",
+        "name": "Minecraft - exemple",
+        "description": "Attend puis appuie sur F3.",
+        "actions": [
+            {
+                "type": "wait",
+                "ms": 500
+            },
+            {
+                "type": "key",
+                "value": "F3"
+            }
+        ]
+    }
 ]

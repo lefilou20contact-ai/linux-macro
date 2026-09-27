@@ -1,0 +1,22 @@
+[
+  {
+    "id": "open-calculator",
+    "name": "Ouvrir la calculatrice",
+    "actions": [
+      {
+        "type": "launch",
+        "command": "gnome-calculator"
+      }
+    ]
+  },
+  {
+    "id": "open-browser",
+    "name": "Ouvrir le navigateur",
+    "actions": [
+      {
+        "type": "open_url",
+        "url": "https://www.google.com"
+      }
+    ]
+  }
+]

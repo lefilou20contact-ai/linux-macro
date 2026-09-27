@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Filou Macro System</title>
+<style>
+body{font-family:system-ui;max-width:900px;margin:auto;padding:20px;background:#111;color:#eee}
+.card{background:#1c1c1c;border:1px solid #333;border-radius:14px;padding:16px;margin:12px 0}
+button,input,select,textarea{padding:9px;border-radius:9px;border:1px solid #444;background:#222;color:#eee}
+button{cursor:pointer}.row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.action{border-top:1px solid #333;padding:10px 0}.muted{color:#aaa}
+</style>
+<body>
+<h1>Filou Macro System</h1>
+<div class=card>
+<b>Appareil :</b> <span id=id>...</span> · <b>Code :</b> <span id=code>...</span>
+</div>
+<div class=card>
+<h2>Créer une macro</h2>
+<input id=name placeholder="Nom de la macro">
+<div id=actions></div>
+<div class=row>
+<select id=type onchange=addAction()>
+<option value="">+ Ajouter une action…</option>
+<option value=launch>Lancer une application/commande</option>
+<option value=open_file>Ouvrir un fichier</option>
+<option value=open_url>Ouvrir une URL</option>
+<option value=command>Exécuter une commande (sensible)</option>
+<option value=text>Préparer du texte</option>
+<option value=wait>Attendre</option>
+</select>
+</div>
+<button onclick=saveMacro()>💾 Enregistrer localement</button>
+</div>
+<div class=card>
+<button onclick=sync()>↻ Synchroniser GitHub</button>
+<span id=status class=muted></span>
+<h2>Macros disponibles</h2><div id=list>...</div>
+</div>
+<script>
+const A="http://127.0.0.1:8765";
+let token=localStorage.getItem("filou_token")||prompt("Token de l'appareil (voir le terminal de l'agent) :");
+if(token)localStorage.setItem("filou_token",token);
+const $=x=>document.getElementById(x);
+function addAction(){
+ let t=$("type").value;if(!t)return;$("type").value="";
+ let d=document.createElement("div");d.className="action";d.dataset.type=t;
+ if(t==="wait")d.innerHTML=`⏱️ Attendre <input data-v type=number value=500> ms`;
+ else if(t==="open_file")d.innerHTML=`📂 Fichier <input data-v placeholder="~/Documents/fichier.txt">`;
+ else if(t==="open_url")d.innerHTML=`🌐 URL <input data-v placeholder="https://...">`;
+ else if(t==="launch")d.innerHTML=`🚀 Commande de lancement <input data-v placeholder="firefox">`;
+ else if(t==="command")d.innerHTML=`⚠️ Commande sensible <input data-v placeholder="rm ..."><label><input data-ok type=checkbox> Je confirme cette commande</label>`;
+ else d.innerHTML=`📋 Texte <textarea data-v placeholder="Texte à préparer"></textarea>`;
+ $("actions").appendChild(d);
+}
+function buildActions(){
+ return [...$("actions").children].map(x=>({type:x.dataset.type, ...(x.dataset.type==="wait"?{ms:+x.querySelector("[data-v]").value}:{x.dataset.type==="command"?{command:x.querySelector("[data-v]").value,approved:x.querySelector("[data-ok]").checked}:{x.dataset.type==="text"?{text:x.querySelector("[data-v]").value}:{x.dataset.type==="open_file"?{path:x.querySelector("[data-v]").value}:{x.dataset.type==="open_url"?{url:x.querySelector("[data-v]").value}:{command:x.querySelector("[data-v]").value}}})}));
+}
+function saveMacro(){
+ let n=$("name").value.trim();if(!n)return alert("Donne un nom à la macro.");
+ let m={id:"m-"+Date.now(),name:n,actions:buildActions()};
+ let all=JSON.parse(localStorage.getItem("filou_drafts")||"[]");all.push(m);localStorage.setItem("filou_drafts",JSON.stringify(all));
+ $("status").textContent="Macro enregistrée dans ce navigateur."; $("name").value=""; $("actions").innerHTML="";
+}
+async function api(p,o={}){o.headers=Object.assign({"X-Filou-Token":token},o.headers||{});return (await fetch(A+p,o)).json()}
+async function load(){
+ try{let i=await (await fetch(A+"/api/info")).json();$("id").textContent=i.id;$("code").textContent=i.pair_code;
+ let ms=await (await fetch(A+"/api/macros")).json();$("list").innerHTML=ms.map(m=>`<div class=action><b>${m.name}</b> <button onclick="run('${m.id}')">▶ Exécuter</button></div>`).join("")||"<span class=muted>Aucune macro synchronisée.</span>";
+ }catch(e){$("status").textContent="Agent Linux non lancé."}
+}
+async function run(id){let r=await api("/api/run/"+encodeURIComponent(id),{method:"POST"});$("status").textContent=r.ok?"Macro lancée.":r.error}
+async function sync(){let r=await api("/api/sync",{method:"POST"});$("status").textContent=r.message;load()}
+load();
+</script>
+</body></html>

@@ -1,0 +1,533 @@
+* {
+    box-sizing: border-box;
+}
+
+
+body {
+    margin: 0;
+
+    font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    background: #101114;
+
+    color: #f2f2f2;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.topbar {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+
+    padding:
+        20px
+        max(18px, calc((100% - 1050px) / 2));
+
+    background: #181a1f;
+
+    border-bottom: 1px solid #30333a;
+}
+
+
+.topbar h1 {
+
+    margin: 0;
+
+    font-size: 25px;
+}
+
+
+.topbar p {
+
+    margin: 5px 0 0;
+
+    color: #9298a2;
+}
+
+
+.connection {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    font-size: 14px;
+
+    color: #aaa;
+}
+
+
+.status-dot {
+
+    width: 10px;
+
+    height: 10px;
+
+    border-radius: 50%;
+}
+
+
+.status-dot.online {
+
+    background: #55d66b;
+}
+
+
+.status-dot.offline {
+
+    background: #777;
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+main {
+
+    max-width: 1050px;
+
+    margin: 25px auto;
+
+    padding: 0 18px;
+}
+
+
+/* =========================
+   PANELS
+========================= */
+
+.panel {
+
+    background: #181a1f;
+
+    border: 1px solid #30333a;
+
+    border-radius: 16px;
+
+    padding: 20px;
+
+    margin-bottom: 18px;
+}
+
+
+.panel-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 12px;
+
+    flex-wrap: wrap;
+}
+
+
+.panel h2 {
+
+    margin-top: 0;
+}
+
+
+.panel h3 {
+
+    margin-top: 25px;
+}
+
+
+.description {
+
+    color: #999fa9;
+
+    line-height: 1.5;
+}
+
+
+/* =========================
+   FORMULAIRES
+========================= */
+
+label {
+
+    display: block;
+
+    margin:
+        15px
+        0
+        6px;
+
+    color: #c8ccd2;
+}
+
+
+input,
+select,
+textarea {
+
+    width: 100%;
+
+    padding: 11px;
+
+    border-radius: 9px;
+
+    border: 1px solid #3b3f47;
+
+    background: #101114;
+
+    color: #eee;
+
+    font: inherit;
+
+    outline: none;
+}
+
+
+textarea {
+
+    resize: vertical;
+
+    min-height: 80px;
+}
+
+
+input:focus,
+select:focus,
+textarea:focus {
+
+    border-color: #777;
+}
+
+
+/* =========================
+   BOUTONS
+========================= */
+
+.buttons {
+
+    display: flex;
+
+    gap: 8px;
+
+    flex-wrap: wrap;
+
+    margin-top: 12px;
+}
+
+
+.button {
+
+    border: 0;
+
+    border-radius: 9px;
+
+    padding: 10px 14px;
+
+    font: inherit;
+
+    cursor: pointer;
+}
+
+
+.button:hover {
+
+    opacity: .9;
+}
+
+
+.primary {
+
+    background: #eeeeee;
+
+    color: #111;
+}
+
+
+.secondary {
+
+    background: #292c33;
+
+    color: #eee;
+}
+
+
+.danger {
+
+    background: #4a2226;
+
+    color: #ffb8bd;
+}
+
+
+.save-button {
+
+    width: 100%;
+
+    margin-top: 18px;
+
+    background: #eeeeee;
+
+    color: #111;
+
+    font-weight: 700;
+}
+
+
+/* =========================
+   ACTIONS
+========================= */
+
+.action-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+
+.action {
+
+    background: #131519;
+
+    border: 1px solid #353941;
+
+    border-radius: 11px;
+
+    padding: 13px;
+}
+
+
+.action-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+
+.action-title {
+
+    font-weight: 650;
+}
+
+
+.action-fields {
+
+    margin-top: 10px;
+}
+
+
+.add-action {
+
+    display: grid;
+
+    grid-template-columns: 1fr auto;
+
+    gap: 8px;
+
+    margin-top: 15px;
+}
+
+
+/* =========================
+   MACROS
+========================= */
+
+.macro-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+
+.macro-card {
+
+    background: #131519;
+
+    border: 1px solid #353941;
+
+    border-radius: 12px;
+
+    padding: 15px;
+}
+
+
+.macro-card h3 {
+
+    margin: 0 0 5px;
+}
+
+
+.macro-description {
+
+    color: #999fa9;
+
+    margin: 5px 0 12px;
+}
+
+
+.macro-actions {
+
+    display: flex;
+
+    gap: 8px;
+
+    flex-wrap: wrap;
+}
+
+
+.empty {
+
+    text-align: center;
+
+    padding: 25px;
+
+    color: #888;
+}
+
+
+/* =========================
+   INFORMATIONS
+========================= */
+
+.info-box {
+
+    background: #101114;
+
+    border: 1px solid #33363d;
+
+    border-radius: 9px;
+
+    padding: 12px;
+
+    margin-top: 10px;
+}
+
+
+.info-box span {
+
+    display: block;
+
+    color: #999;
+
+    font-size: 12px;
+
+    margin-bottom: 5px;
+}
+
+
+.info-box strong {
+
+    word-break: break-all;
+}
+
+
+/* =========================
+   MESSAGES
+========================= */
+
+.message {
+
+    display: none;
+
+    margin-top: 12px;
+
+    padding: 10px;
+
+    border-radius: 8px;
+}
+
+
+.message.success {
+
+    display: block;
+
+    background: #17281b;
+
+    border: 1px solid #35663d;
+
+    color: #8bea9a;
+}
+
+
+.message.error {
+
+    display: block;
+
+    background: #291719;
+
+    border: 1px solid #6b363a;
+
+    color: #ff9696;
+}
+
+
+.toast {
+
+    position: fixed;
+
+    right: 18px;
+
+    bottom: 18px;
+
+    display: none;
+
+    padding: 12px 16px;
+
+    background: #eeeeee;
+
+    color: #111;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 8px 30px #0008;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 650px) {
+
+    .topbar {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+
+    .add-action {
+
+        grid-template-columns: 1fr;
+    }
+
+}
